@@ -1,0 +1,24 @@
+[submodule "genesis_adaptor"]
+	path = genesis_adaptor
+	url = git@github.com:UniEnvOrg/genesis_adaptor.git
+	branch = tactile_sensing
+[submodule "tianji_sim_real"]
+	path = tianji_sim_real
+	url = git@github.com:realquantumcookie/tianji_sim_real.git
+	branch = tactile_sensing
+[submodule "unienv/UniEnv"]
+	path = unienv/UniEnv
+	url = git@github.com:UniEnvOrg/UniEnv.git
+	branch = main
+[submodule "unienv/unienv-input-devices"]
+	path = unienv/unienv-input-devices
+	url = git@github.com:UniEnvOrg/unienv-input-devices.git
+	branch = main
+[submodule "unienv/unienv-tianji"]
+	path = unienv/unienv-tianji
+	url = git@github.com:UniEnvOrg/unienv-tianji.git
+	branch = main
+[submodule "unienv/unienv-wuji"]
+	path = unienv/unienv-wuji
+	url = git@github.com:UniEnvOrg/unienv-wuji.git
+	branch = main
