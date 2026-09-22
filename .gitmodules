@@ -22,3 +22,6 @@
 	path = unienv/unienv-wuji
 	url = git@github.com:UniEnvOrg/unienv-wuji.git
 	branch = main
+[submodule "unienv/zed_camera_adaptor"]
+	path = unienv/zed_camera_adaptor
+	url = git@github.com:UniEnvOrg/zed_camera_adaptor.git
