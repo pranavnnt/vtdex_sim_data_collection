@@ -25,3 +25,6 @@
 [submodule "unienv/zed_camera_adaptor"]
 	path = unienv/zed_camera_adaptor
 	url = git@github.com:UniEnvOrg/zed_camera_adaptor.git
+[submodule "unienv/realsense_camera_adaptor"]
+	path = unienv/realsense_camera_adaptor
+	url = git@github.com:pranavnnt/realsense_camera_adaptor.git
