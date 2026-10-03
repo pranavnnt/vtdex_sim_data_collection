@@ -98,14 +98,14 @@ Everything below has a working default; change them only if something feels wron
 
 ### Scripted collection (no operator)
 
-`scripts/scripted_grasp_drill.py` in the sibling `vtdex_policies` repo (`../vtdex_policies`, installed by the requirements file; the policy itself is `vtdex_policies.policy.scripted.GraspDrillPolicy`) collects the `grasp_drill` task without a device: a scripted right hand grips the drill handle with the index finger on the trigger, squeezes, and lifts it 15 cm. From inside `../vtdex_policies/`:
+`scripts/generate_scripted_demos.py` in the sibling `vtdex_policies` repo (`../vtdex_policies`, installed by the requirements file; the policy itself is `vtdex_policies.policy.scripted.SimpleGraspDrillPolicy`) collects the `grasp_drill` task without a device: the scripted right hand slides in from behind the drill in an open C, takes a pistol grip (palm on the handle's right side, fingers round its front, thumb opposing on its left side) and lifts it 15 cm. From inside `../vtdex_policies/`:
 
 ```bash
-python scripts/scripted_grasp_drill.py --episodes 50 --record-dir data/grasp_drill \
-    --sim-cams --camera-depth --hand-tactile
+python scripts/generate_scripted_demos.py --num-demos 50 --record-dir data/grasp_drill_scripted \
+    --sim-cams --camera-depth --hand-tactile --tactile-layout glove --no-viewer --seed 0
 ```
 
-Each successful episode is saved as `episode_NNNN.pt` in the layout above, without the `tracking` entry (there is no operator), plus `scripted_policy` and `success` fields. Failed episodes are dropped unless `--keep-failures` is given. `--no-viewer`, `--front-cam-view`, `--tactile-layout`, `--table-texture` and `--dt` (default `1/20` s) work as in `teleop.py`; `--seed` seeds the first reset. The drill spawns at the same fixed pose every episode and the policy has no randomness, so the robot and drill motion come out near-identical from episode to episode; only the background lighting changes.
+It runs until `--num-demos` episodes succeed (at most `--max-attempts`, default twice that) and saves each as `episode_NNNN.pt` in the layout above, without the `tracking` entry (there is no operator), plus `scripted_policy`, `seed`, `success` and noise fields; failed episodes are dropped, and numbering continues after episodes already in `--record-dir`. `--no-viewer`, `--front-cam-view`, `--tactile-layout`, `--table-texture` and `--dt` (default `1/20` s) work as in `teleop.py`; `--seed` seeds the first attempt and increments per attempt. For diversity, each episode moves the drill's spawn by a uniform random offset within `--drill-pos-range DX DY DZ` (± m, default `0.03 0.03 0`) and turns it within `--drill-rpy-range R P Y` (± deg roll/pitch/yaw, default `0 0 20`), jitters the grasp position (`--waypoint-noise`, std in m, default 0.005) and adds Gaussian noise to the executed right-arm/hand action (`--action-noise`, `--hand-noise`) with a per-episode scale ~ U(0, 1); the recorded action is the clean scripted one.
 
 ## Working in a submodule
 
