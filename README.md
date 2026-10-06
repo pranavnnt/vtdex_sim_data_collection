@@ -56,7 +56,9 @@ For the `grasp_drill` task, follow the step-by-step guide in [docs/grasp_drill_d
 
 ### Recorded episode layout
 
-Each kept episode writes a single `episode_NNNN.pt` file. Camera RGB is stored as raw `uint8` frames directly inside it, alongside every other observation leaf (no separate video files; raw frames run ~2.8 MB/step and `torch.save` does not compress them). Depth is stored as `float16`. Neither changes the env's observation space — both are storage-only, applied as the episode is written.
+Each kept episode writes a single `episode_NNNN.pt` file. Camera RGB is stored as raw `uint8` frames directly inside it, alongside every other observation leaf (no separate video files; raw frames run ~2.8 MB/step and `torch.save` does not compress them). Depth is stored as `float16`, zlib-compressed frame by frame (lossless, ~8× smaller) under `camera/depth_zlib`: frame `t` is `zlib.decompress(data[offsets[t]:offsets[t+1]])` read as `float16` and reshaped to `shape`. `replay_episode.py` and `vtdex_policies`' `convert_episodes.py` decode it, and still read older episodes that have a plain `camera/depth`. Neither changes the env's observation space — both are storage-only, applied as the episode is written.
+
+The file also stores `dt`, the control period it was recorded at; `convert_episodes.py` uses it to keep every Nth step for the 20 Hz policy (`--policy-hz`), which must divide the recording rate (30 Hz recordings: 30, 15 or 10).
 
 Next to `obs` and `action`, the file has a `tracking` entry: the raw hand tracking from the device at every step, keyed by the operator's own hand (`left_hand` / `right_hand`, not swapped by `--mirror`). Each hand has `detected` (bool), `wrist_pose` (4×4, in the device's frame) and `keypoints` (21×3 joint positions relative to the wrist). It also has `head_pose` (4×4, same frame as the wrists; NaN when the device has no head tracking, e.g. WiLoR), so `inv(head_pose) @ wrist_pose` gives the wrist relative to the head. When a hand isn't seen, `detected` is false and the pose/keypoints are NaN. Step `t` of `tracking` is the reading that produced `action[t]`.
 
@@ -89,7 +91,7 @@ Everything below has a working default; change them only if something feels wron
 | `--max-lin-vel` / `--max-rot-vel` | `0.25` m/s / `1.0` rad/s | Velocity clamps on the arm targets. |
 | `--gesture-fist` / `--gesture-open` / `--gesture-window` | `1.25` / `1.55` / `2.5` s | Thresholds for the fist-then-open re-anchor gesture that engages/detaches an arm. `--no-reanchor-gesture` disables it. |
 | `--no-arms` / `--no-hands` | both enabled | Freeze one half of the embodiment while debugging the other. |
-| `--dt` | `1/20` s | Control period. With the viewer open the sim is held to real time, so this is also the collection rate. |
+| `--dt` | `1/30` s sim, `1/20` s real | Control period. The loop is held to real time, so this is also the collection rate (physics substeps stay at or under 12.5 ms at any rate). Saved in each episode as `dt`. |
 | `--steps` | `0` (unlimited) | Stop after N steps instead of running until interrupted. |
 | `--log-hz` | `1.0` | Rate of the per-side status line (`active`, `engaged`, grip ratio, xyz, mean finger flex). |
 | `--offline` | off | Build the env without connecting to any device — smoke-testing the pipeline. |
